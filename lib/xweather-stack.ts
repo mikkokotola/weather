@@ -1,16 +1,65 @@
 import * as cdk from 'aws-cdk-lib';
+import { IResource, LambdaIntegration, MockIntegration, PassthroughBehavior, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
+import { join } from "path";
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class XweatherStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const nodeJsFunctionProps: NodejsFunctionProps = {
+      environment: {
+        AERIS_ID: 'could_put_aeris_id_here'
+      },
+      runtime: Runtime.NODEJS_20_X,
+    }
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'XweatherQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const getCurrentWeatherLambda = new NodejsFunction(this, 'getCurrentWeatherFunction', {
+      entry: join(__dirname, '..','lambdas', 'get-current-weather.ts'),
+      ...nodeJsFunctionProps,
+    });
+
+    const getCurrentWeatherLambdaIntegration = new LambdaIntegration(getCurrentWeatherLambda);
+
+    const api = new RestApi(this, 'weatherApi', {
+      restApiName: 'Weather Service'
+      });
+
+    const items = api.root.addResource('weather');
+    items.addMethod('GET', getCurrentWeatherLambdaIntegration);
+    addCorsOptions(items);
+
   }
+}
+
+export function addCorsOptions(apiResource: IResource) {
+  apiResource.addMethod('OPTIONS', new MockIntegration({
+    // In case you want to use binary media types, uncomment the following line
+    // contentHandling: ContentHandling.CONVERT_TO_TEXT,
+    integrationResponses: [{
+      statusCode: '200',
+      responseParameters: {
+        'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        'method.response.header.Access-Control-Allow-Origin': "'*'",
+        'method.response.header.Access-Control-Allow-Credentials': "'false'",
+        'method.response.header.Access-Control-Allow-Methods': "'OPTIONS,GET'",
+      },
+    }],
+    requestTemplates: {
+      "application/json": "{\"statusCode\": 200}"
+    },
+  }), {
+    methodResponses: [{
+      statusCode: '200',
+      responseParameters: {
+        'method.response.header.Access-Control-Allow-Headers': true,
+        'method.response.header.Access-Control-Allow-Methods': true,
+        'method.response.header.Access-Control-Allow-Credentials': true,
+        'method.response.header.Access-Control-Allow-Origin': true,
+      },
+    }]
+  })
 }

@@ -4,6 +4,7 @@ import * as cdk from 'aws-cdk-lib';
 import { XweatherStack } from '../lib/xweather-stack';
 
 const app = new cdk.App();
+
 new XweatherStack(app, 'XweatherStack', {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
