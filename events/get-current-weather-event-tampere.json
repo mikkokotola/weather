@@ -1,0 +1,6 @@
+{
+    "queryStringParameters": {
+        "city": "tampere",
+        "countrycode": "fi"
+    }
+}

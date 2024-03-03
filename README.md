@@ -23,4 +23,4 @@
 Requirements: AWS SAM CLI installed.
 
 * `npx cdk synth`   Emit the synthesized CloudFormation template
-* `sam local invoke getCurrentWeatherFunction --no-event -t ./cdk.out/XweatherStack.template.json`  Invoke the get current weather lambda function locally using SAM.
+* `sam local invoke getCurrentWeatherFunction --event ./events/get-current-weather-event-tampere.json -t ./cdk.out/XweatherStack.template.json`  Invoke the get current weather lambda function locally using SAM.

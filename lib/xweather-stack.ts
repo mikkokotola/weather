@@ -28,9 +28,10 @@ export class XweatherStack extends cdk.Stack {
       restApiName: 'Weather Service'
       });
 
-    const items = api.root.addResource('weather');
-    items.addMethod('GET', getCurrentWeatherLambdaIntegration);
-    addCorsOptions(items);
+    const weatherApi = api.root.addResource('weather');
+    weatherApi.addMethod('GET', getCurrentWeatherLambdaIntegration);
+
+    addCorsOptions(weatherApi);
 
   }
 }

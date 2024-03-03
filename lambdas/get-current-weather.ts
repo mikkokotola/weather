@@ -1,8 +1,13 @@
 import AerisWeather from "@aerisweather/javascript-sdk";
 import { AerisCreds, getAerisId as getAerisCreds } from "../lib/credsProvider";
 
-export const handler = async (): Promise<any> => {
-  const PLACE = "tampere,fi"
+export const handler = async (event: any): Promise<any> => {
+  const city = event.queryStringParameters.city;
+  const countrycode = event.queryStringParameters.countrycode;
+  if (!city || !countrycode) {
+    return { statusCode: 400, body: `Error: You are missing either the query parameter city or countrycode. Both are required. E.g. ?city=tampere&countrycode=fi` };
+  }
+  const PLACE = `${city.toLowerCase()},${countrycode.toLowerCase()}`;
 
   // Improvement: move the secret fetching to creating the lambda and pass secret as env variable to the lambda.
   // A bit less secure but much more efficient.
@@ -26,17 +31,16 @@ export const handler = async (): Promise<any> => {
       .place(PLACE)
       .get();
 
-    const data = res.data.ob;
     const response = res.data.ob;
     console.log(
-      `The current weather in ${PLACE} is ${data.weatherPrimary.toLowerCase()} and ${
-        data.tempC
+      `The current weather in ${PLACE} is ${response.weatherPrimary.toLowerCase()} and ${
+        response.tempC
       } degrees (C).`
     );
-    console.log(response);
 
     return { statusCode: 200, body: JSON.stringify(response) };
   } catch (error) {
+    console.error(error)
     return { statusCode: 500, body: JSON.stringify(error) };
   }
 };
