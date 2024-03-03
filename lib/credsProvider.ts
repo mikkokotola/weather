@@ -3,7 +3,7 @@ import {
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
 
-const AERIS_SECRET_ID = "aerisweather";
+export const AERIS_SECRET_ID = "aerisweather";
 
 const client = new SecretsManagerClient({
   region: "eu-north-1",
