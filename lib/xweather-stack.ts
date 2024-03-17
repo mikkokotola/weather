@@ -12,6 +12,7 @@ import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { Construct } from "constructs";
 import { join } from "path";
 import { AERIS_SECRET_ID } from "./credsProvider";
+import { Duration } from "aws-cdk-lib";
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class XweatherStack extends cdk.Stack {
@@ -23,6 +24,7 @@ export class XweatherStack extends cdk.Stack {
         AERIS_ID: "could_put_aeris_id_here",
       },
       runtime: Runtime.NODEJS_20_X,
+      timeout: Duration.seconds(15)
     };
 
     const getCurrentWeatherLambda = new NodejsFunction(
@@ -30,7 +32,16 @@ export class XweatherStack extends cdk.Stack {
       "getCurrentWeatherFunction",
       {
         entry: join(__dirname, "..", "lambdas", "get-current-weather.ts"),
-        ...nodeJsFunctionProps,
+        ...nodeJsFunctionProps
+      }
+    );
+
+    const getRadarImageLambda = new NodejsFunction(
+      this,
+      "getRadarImageFunction",
+      {
+        entry: join(__dirname, "..", "lambdas", "get-radar-image.ts"),
+        ...nodeJsFunctionProps
       }
     );
 
@@ -41,9 +52,13 @@ export class XweatherStack extends cdk.Stack {
       AERIS_SECRET_ID
     );
     aerisCredsSecret.grantRead(getCurrentWeatherLambda);
+    aerisCredsSecret.grantRead(getRadarImageLambda);
 
     const getCurrentWeatherLambdaIntegration = new LambdaIntegration(
       getCurrentWeatherLambda
+    );
+    const getRadarImageLambdaIntegration = new LambdaIntegration(
+      getRadarImageLambda
     );
 
     const api = new RestApi(this, "weatherApi", {
@@ -51,7 +66,9 @@ export class XweatherStack extends cdk.Stack {
     });
 
     const weatherApi = api.root.addResource("weather");
+    const radarApi = api.root.addResource("radar");
     weatherApi.addMethod("GET", getCurrentWeatherLambdaIntegration);
+    radarApi.addMethod("GET", getRadarImageLambdaIntegration);
 
     api.root.addCorsPreflight({
       allowOrigins: ['*'],
