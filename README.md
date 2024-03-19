@@ -1,4 +1,12 @@
 # Location weather service
+A simple weather app backend (PoC, not a full functional app) using Vaisala XWeather API, AWS CDK, Lambda, Api Gateway and Secrets Manager. In this app, the weather data is not transformed, and the only real advantage of fetching the weather data in the backend is keeping the API keys secure (stored in AWS Secrets manager).
+
+The related frontend repo is at https://github.com/mikkokotola/weatherfront.
+
+## Architecture
+![Weather app architecture](Weather_architecture.png)
+
+Note that the frontend is in another repo.
 
 ## Setup and requirements
 - Aerisweather API (Vaisala XWeather) requires registration, see https://www.xweather.com/account.
@@ -24,3 +32,6 @@ Requirements: AWS SAM CLI installed.
 
 * `npx cdk synth`   Emit the synthesized CloudFormation template
 * `sam local invoke getCurrentWeatherFunction --event ./events/get-current-weather-event-tampere.json -t ./cdk.out/XweatherStack.template.json`  Invoke the get current weather lambda function locally using SAM.
+
+## Notes
+- Tests runnable but no tests implemented
